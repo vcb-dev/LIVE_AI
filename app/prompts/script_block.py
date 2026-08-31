@@ -10,7 +10,8 @@ Viết kịch bản ngắn gọn, tự nhiên, dễ đọc trên sóng live.
 Quy tắc theo loại block:
 - OPENING / CLOSING / CTA / GAME: title = nhãn ngắn trên màn teleprompter; content = thẻ nhắc việc host cần làm (không văn dài).
 - PRODUCT_SPEC: content dùng placeholder {{name}}, {{code}}, {{material}}... nếu thiếu thông tin thì giữ placeholder.
-- STORY / MEANING: content là văn nói đọc nguyên văn, cảm xúc, gần gũi.
+- STORY: content là văn nói đọc nguyên văn, cảm xúc, gần gũi — kể câu chuyện gắn sản phẩm.
+- MEANING: content là 1 fun fact / interesting fact về sản phẩm hoặc liên quan trực tiếp (chất liệu, đá quý, kỹ thuật, văn hóa, biểu tượng). 2–4 câu, ~30–60 giây đọc. Gây tò mò, dễ nhớ; có thể mở đầu "Chị em có biết...", "Ít ai biết...". Không viết cảm xúc đau buồn hay chuyện tình (đó là STORY). Không hard-sell. Không bịa số liệu/lịch sử nếu không chắc — ưu tiên kiến thức phổ biến hoặc suy từ thuộc tính sản phẩm.
 
 Luôn trả về JSON thuần (không markdown), đúng schema:
 {"title":"...","content":"...","suggestedDurationSec":60}
@@ -19,8 +20,11 @@ Luôn trả về JSON thuần (không markdown), đúng schema:
 TYPE_HINTS: dict[BlockType, str] = {
     "OPENING": "Mở đầu buổi live: chào, giới thiệu chủ đề.",
     "PRODUCT_SPEC": "Đọc thông số sản phẩm, có thể dùng placeholder.",
-    "STORY": "Câu chuyện gắn với sản phẩm.",
-    "MEANING": "Ý nghĩa / thông điệp món trang sức.",
+    "STORY": "Câu chuyện cảm xúc gắn với sản phẩm, host đọc nguyên văn.",
+    "MEANING": (
+        "Fun fact / interesting fact gắn sản phẩm trang sức: kiến thức thú vị, "
+        "bất ngờ, dễ nhớ — không phải câu chuyện tình cảm."
+    ),
     "CTA": "Kêu gọi hành động: xem SP, inbox, chốt đơn.",
     "GAME": "Trò chơi tương tác: đoán giá, comment may mắn.",
     "CLOSING": "Kết thúc: cảm ơn, hẹn buổi sau.",
@@ -44,7 +48,12 @@ def build_messages(body: GenerateScriptBlockRequest) -> list[dict[str, str]]:
     if body.group_name:
         parts.append(f"Nhóm CTA/trò chơi: {body.group_name}")
     if body.existing_title:
-        parts.append(f"Title tham khảo (có thể cải thiện): {body.existing_title}")
+        if body.type == "MEANING":
+            parts.append(
+                f"Title đã có (generate fact KHÁC, không trùng ý): {body.existing_title}"
+            )
+        else:
+            parts.append(f"Title tham khảo (có thể cải thiện): {body.existing_title}")
 
     user_prompt = "\n\n".join(parts)
     return [

@@ -10,8 +10,6 @@ class Settings(BaseSettings):
     ai_service_api_key: str
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
-    port: int = 8080
-    log_level: str = "info"
     request_timeout_sec: int = 60
 
 
